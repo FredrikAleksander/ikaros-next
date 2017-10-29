@@ -63,7 +63,7 @@ for arg in "$@" ; do
 	esac
 done
 
-if [ -z "$NUMTHREADS" ]
+if [ -z "$NUMTHREADS" ] ; then
 	NUMTHREADS=1
 fi
 
