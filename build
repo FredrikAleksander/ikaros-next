@@ -1,0 +1,218 @@
+#!/bin/sh
+
+PROJECTS="sys lib/libc"
+TARGET=i386
+BSP=
+SYSROOT=sysroot
+DEBUGSYMS=false
+TOOLCHAIN_PREFIX=/usr/local
+TOOLCHAIN_BUILD=false
+NUMTHREADS=
+
+for arg in "$@" ; do
+	case "$arg" in
+	--build-toolchain)
+		TOOLCHAIN_BUILD=true
+		;;
+	--prefix=*)
+		TOOLCHAIN_PREFIX=`echo $arg | sed -s 's/--prefix=//'`
+		;;
+	--target=*)
+		TARGET=`echo $arg | sed -s 's/--target=//'`
+		;;
+	--bsp-target=*)
+		BSP=`echo $arg | sed -s 's/--bsp-target=//'`
+		;;
+	--sysroot=*)
+		SYSROOT=`echo $arg | sed -s 's/--sysroot=//'`
+		;;
+	--enable-debug)
+		DEBUGSYMS=true
+		;;
+	--disable-debug)
+		DEBUGSYMS=false
+		;;
+	--num-threads=*)
+		NUMTHREADS=`echo $arg | sed -s 's/--num-threads=(\d+)'`
+		;;
+	--help)
+		echo 'Usage: ./build [options]'
+		echo '  --build-toolchain        : Force building of toolchain'
+		echo '  --prefix=<path>          : Toolchain prefix'
+		echo '  --target=<target>        : Set target. Valid targets:'
+		echo '      i386'
+		echo '      x86_64'
+		echo '      arm'
+		echo '      aarch64'
+		echo '  --bsp-target=<bsp-target>: Set BSP target. ARM/AARCH64 only'
+		echo '    Valid ARM BSP targets'
+		echo '      beaglebone'
+		echo '      pandaboard'
+		echo '      rpi2'
+		echo '    Valid AARCH64 BSP targets'
+		echo '      rpi2'
+		echo '  --sysroot=<path>         : Output system root'
+		echo '  --enable-debug           : Generate debug symbols'
+		echo '  --disable-debug          : Do not generate debug symbols (Default)'
+		echo '  --num-threads=<num>      : Number of threads to use for make'
+		exit 0
+		;;
+	*)
+		echo "Invalid argument: $arg"
+		exit 1
+	esac
+done
+
+if [ -z "$NUMTHREADS" ]
+	NUMTHREADS=1
+fi
+
+SYSROOT=`readlink -f $SYSROOT`
+TARGET=${TARGET}-ikaros
+TARGETARCH=`scripts/arch-from-target.sh ${TARGET}`
+DESTDIR=$SYSROOT
+CFLAGS="$CFLAGS"
+
+case $TARGETARCH in
+	i386)
+		;;
+	x86_64)
+		;;
+	arm)
+		case $BSP in
+			beaglebone)
+				;;
+			pandaboard)
+				;;
+			rpi2)
+				;;
+			*)
+				echo "Invalid BSP target for arm: $BSP"
+				exit 1
+				;;
+		esac
+		;;
+	aarch64)
+		case $BSP in
+			rpi2)
+				;;
+			*)
+				echo "Invalid BSP target for aarch64: $BSP"
+				exit 1
+				;;
+		esac
+		;;
+	*)
+		echo Unknown target: $TARGETARCH
+		exit 1
+esac
+
+if $DEBUGSYMS ; then
+	CFLAGS="$CFLAGS -g"
+fi
+
+export BSP
+export TARGET
+export TARGETARCH
+export SYSROOT
+export DEBUGSYMS
+export DESTDIR
+export CFLAGS
+
+MAKE=make
+which $MAKE > /dev/null
+RESULT=$?
+if [ $RESULT -eq 0 ] ; then
+	$MAKE --version | grep -q -m1 "GNU Make"
+	RESULT=$?
+
+	if [ $RESULT -eq  1 ] ; then
+		MAKE=gmake
+		which $MAKE
+		RESULT=$?
+		if [ $RESULT -eq 0 ] ; then
+			$MAKE --version | grep -q -m1 "GNU Make"
+			RESULT=$?
+		fi
+	fi
+fi
+
+if [ $RESULT -eq 1 ] ; then
+	echo "GNU make not found"
+	exit 1
+fi
+
+echo $TARGET
+
+which ${TARGET}-gcc > /dev/null
+RESULT=$?
+
+if $TOOLCHAIN_BUILD ; then
+	RESULT=1
+fi
+
+CURTMPDIR=`pwd`
+if [ $RESULT -eq 1 ] ; then
+	echo "Building toolchain..."
+	echo "Installing system root headers..."
+	for PROJECT in "`pwd`/sys" "`pwd`/lib/libc" ; do
+		cd $PROJECT
+		$MAKE -j$NUMTHREADS install-headers
+	done
+	cd $CURTMPDIR
+	echo "Building Binutils..."
+	if [ -d "build-${TARGET}-binutils" ] ; then
+		rm -Rf "build-${TARGET}-binutils"
+	fi
+	mkdir -p "build-${TARGET}-binutils"
+	cd "build-${TARGET}-binutils"
+	../gnu/binutils/configure --target="$TARGET" \
+		--prefix="$TOOLCHAIN_PREFIX" \
+		--with-sysroot="$SYSROOT" \
+		--disable-werror
+	if [ $? -ne 0 ] ; then 
+		exit 1
+	fi
+	$MAKE -j$NUMTHREADS
+	if [ $? -ne 0 ] ; then
+		exit 1
+	fi
+	$MAKE -j$NUMTHREADS install
+	if [ $? -ne 0 ] ; then
+		exit 1
+	fi
+
+	cd $CURTMPDIR
+	echo "Building ${TARGET}-ikaros GCC..."
+	if [ -d "build-${TARGET}-gcc" ] ; then
+		rm -Rf "build-${TARGET}-gcc"
+	fi
+	mkdir -p "build-${TARGET}-gcc"
+	cd "build-${TARGET}-gcc"
+	../gnu/gcc/configure --target="$TARGET" \
+		--prefix="$TOOLCHAIN_PREFIX" \
+		--with-sysroot="$SYSROOT" \
+		--enable-languages=c,c++
+	if [ $? -ne 0 ] ; then
+		exit 1
+	fi
+	$MAKE -j$NUMTHREADS all-gcc all-target-libgcc
+	if [ $? -ne 0 ] ; then
+		exit 1
+	fi
+	$MAKE -j$NUMTHREADS install-gcc install-target-libgcc
+	if [ $? -ne 0 ] ; then
+		exit 1
+	fi
+
+	# TODO: Build libc, then libstdc++
+	# !Requires having implemented some of libc!
+
+	cd $CURTMPDIR
+fi
+
+for PROJECT in $PROJECTS ; do
+	cd $CURTMPDIR/$PROJECT
+	$MAKE
+	$MAKE install
+done

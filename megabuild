@@ -1,0 +1,22 @@
+#!/bin/sh
+
+for TARGET in "i386" "x86_64" ; do
+	echo ./build --prefix="$HOME/ikaros" \
+		 --target="$TARGET" --enable-debug \
+		 --sysroot="$HOME/ikaros-sysroot-${TARGET}" \
+		 --num-threads=8
+done
+
+for BSP in "rpi2" "beaglebone" "pandaboard" ; do
+	echo ./build --prefix="$HOME/ikaros" \
+		--target=arm --enable-debug \
+		--sysroot="$HOME/ikaros-sysroot-arm-${BSP}" \
+		--bsp-target="$BSP" --num-threads=8
+done
+
+for BSP in "rpi2" ; do
+	echo ./build --prefix="$HOME/ikaros" \
+		--target=aarch64 --enable-debug \
+		--sysroot="$HOME/ikaros-sysroot-aarch64-${BSP}" \
+		--bsp-target="$BSP" --num-threads=8
+done

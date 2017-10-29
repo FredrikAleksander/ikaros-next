@@ -1,0 +1,6 @@
+[submodule "gnu/binutils"]
+	path = gnu/binutils
+	url = https://github.com/FredrikAleksander/binutils
+[submodule "gnu/gcc"]
+	path = gnu/gcc
+	url = https://github.com/FredrikAleksander/gcc
