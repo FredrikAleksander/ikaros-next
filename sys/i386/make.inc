@@ -12,9 +12,9 @@ KERNEL_SOURCES+=\
 	$(wildcard i386/boot/*.c)
 LINK_LIST_START=\
 	$(BUILDDIR)/i386/crt/crti.o \
-	$(BUILDDIR)/i386/crt/crtbegin.o
+	$(CRTBEGIN_OBJ)
 LINK_LIST_END=\
 	$(BUILDDIR)/i386/crt/crtend.o \
-	$(BUILDDIR)/i386/crt/crtn.o
+	$(CRTEND_OBJ)
 
 LINKER_SCRIPT=i386/linker.ld

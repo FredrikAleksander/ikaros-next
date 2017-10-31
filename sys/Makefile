@@ -28,6 +28,9 @@ KERNEL_OBJS= \
 	$(KERNEL_ASM_OBJS)
 KERNEL=$(BUILDDIR)/ikaros-$(TARGETARCH).elf
 
+CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
+CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
+
 LINK_LIST=\
 	$(LINK_LIST_START) \
 	$(KERNEL_OBJS) \
@@ -38,10 +41,7 @@ LINK_LIST=\
 
 all: $(KERNEL)
 
-$(BUILDDIR)/$(ARCHDIR)/crt/crtbegin.o $(BUILDDIR)/$(ARCHDIR)/crt/crtend.o:
-	@OBJ=`$(CC) $(CFLAGS) $(LDFLAGS) -print-file-name=$(@F)` && cp "$$OBJ" $@
-
-%.o:
+%.o: %.c %.S
 	$(CC) -c $^ -o $@ $(CFLAGS)
 
 $(BUILDDIR)/%.d: %.S
@@ -60,10 +60,11 @@ clean:
 	rm -f $(KERNEL_OBJS)
 
 install-headers:
+	echo $(BUILDDIR)/$(ARCHDIR)/crt/crtbegin.o
 	mkdir -p $(DESTDIR)/usr/include/sys
 	cp -Rf $(wildcard sys/*.h) $(DESTDIR)/usr/include/sys
 
-install-kernel:
+install-kernel: $(KERNEL)
 	mkdir -p $(DESTDIR)/boot
 	cp $(KERNEL) $(DESTDIR)/boot/kernel
 

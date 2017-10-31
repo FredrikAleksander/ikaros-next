@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PROJECTS="sys lib/libc"
+PROJECTS="sys" # "lib/libc"
 TARGET=i386
 BSP=
 SYSROOT=sysroot
@@ -141,8 +141,6 @@ if [ $RESULT -eq 1 ] ; then
 	echo "GNU make not found"
 	exit 1
 fi
-
-echo $TARGET
 
 which ${TARGET}-gcc > /dev/null
 RESULT=$?
