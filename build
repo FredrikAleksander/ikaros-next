@@ -33,7 +33,7 @@ for arg in "$@" ; do
 		DEBUGSYMS=false
 		;;
 	--num-threads=*)
-		NUMTHREADS=`echo $arg | sed -s 's/--num-threads=(\d+)/$1/'`
+		NUMTHREADS=`echo $arg | sed -E 's/--num-threads=(\d+)/\1/'`
 		;;
 	--help)
 		echo 'Usage: ./build [options]'
@@ -153,6 +153,7 @@ fi
 
 CURTMPDIR=`pwd`
 if [ $RESULT -eq 1 ] ; then
+	mkdir -p $TOOLCHAIN_PREFIX
 	echo "Building toolchain..."
 	echo "Installing system root headers..."
 	for PROJECT in "`pwd`/sys" "`pwd`/lib/libc" ; do

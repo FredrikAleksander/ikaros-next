@@ -46,11 +46,11 @@ $(BUILDDIR)/$(ARCHDIR)/crt/crtbegin.o $(BUILDDIR)/$(ARCHDIR)/crt/crtend.o:
 
 $(BUILDDIR)/%.d: %.S
 	@mkdir -p $(BUILDDIR)/$(shell dirname "$<")
-	$(CC) $(CFLAGS) $< -MM -MT $(@:%.d=%.o) > $@
+	@$(CC) $(CFLAGS) $< -MM -MT $(@:%.d=%.o) > $@
 
 $(BUILDDIR)/%.d: %.c
 	@mkdir -p $(BUILDDIR)/$(shell dirname "$<")
-	$(CC) $(CFLAGS) $< -MM -MT $(@:%.d=%.o) > $@
+	@$(CC) $(CFLAGS) $< -MM -MT $(@:%.d=%.o) > $@
 
 $(KERNEL): $(LINK_LIST)
 	$(CC) -o $@ -T $(LINKER_SCRIPT) $(LDFLAGS) $(LINK_LIST)
