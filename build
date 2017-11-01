@@ -151,7 +151,13 @@ export CFLAGS
 
 CURTMPDIR=`pwd`
 if [ $RESULT -eq 1 ] ; then
-	mkdir -p $TOOLCHAIN_PREFIX
+	mkdir -p $TOOLCHAIN_PREFIX 
+
+
+	echo $SYSROOT
+	echo $TARGET
+	echo $DESTDIR
+
 	echo "Building toolchain..."
 	echo "Installing system root headers..."
 	for PROJECT in "`pwd`/sys" "`pwd`/lib/libc" ; do
