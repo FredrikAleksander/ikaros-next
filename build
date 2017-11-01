@@ -156,7 +156,7 @@ if [ $RESULT -eq 1 ] ; then
 	echo "Installing system root headers..."
 	for PROJECT in "`pwd`/sys" "`pwd`/lib/libc" ; do
 		cd $PROJECT
-		DESTDIR="$TOOLCHAIN_PREFIX" BSP="$BSP" TARGET="$TARGET" TARGETARCH="$TARGET" DEBUGSYMS="$DEBUGSYMS" CFLAGS="$CFLAGS"  $MAKE -j$NUMTHREADS install-headers
+		DESTDIR="$SYSROOT" BSP="$BSP" TARGET="$TARGET" TARGETARCH="$TARGET" DEBUGSYMS="$DEBUGSYMS" CFLAGS="$CFLAGS"  $MAKE -j$NUMTHREADS install-headers
 	done
 	cd $CURTMPDIR
 	echo "Building Binutils..."
