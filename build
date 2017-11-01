@@ -141,14 +141,6 @@ if $TOOLCHAIN_BUILD ; then
 	RESULT=1
 fi
 
-export BSP
-export TARGET
-export TARGETARCH
-export SYSROOT
-export DEBUGSYMS
-export DESTDIR
-export CFLAGS
-
 CURTMPDIR=`pwd`
 if [ $RESULT -eq 1 ] ; then
 	mkdir -p $TOOLCHAIN_PREFIX 
@@ -171,21 +163,23 @@ if [ $RESULT -eq 1 ] ; then
 	fi
 	mkdir -p "build-${TARGET}-binutils"
 	cd "build-${TARGET}-binutils"
-	../gnu/binutils/configure --target="$TARGET" \
+	echo ../gnu/binutils/configure --target="$TARGET" \
 		--prefix="$TOOLCHAIN_PREFIX" \
 		--with-sysroot="$SYSROOT" \
 		--disable-werror
 	if [ $? -ne 0 ] ; then 
 		exit 1
 	fi
-	$MAKE -j$NUMTHREADS
+	#$MAKE -j$NUMTHREADS
 	if [ $? -ne 0 ] ; then
 		exit 1
 	fi
-	$MAKE -j$NUMTHREADS install
+	#$MAKE -j$NUMTHREADS install
 	if [ $? -ne 0 ] ; then
 		exit 1
 	fi
+
+	export
 
 	cd $CURTMPDIR
 	echo "Building ${TARGET}-ikaros GCC..."
@@ -194,7 +188,7 @@ if [ $RESULT -eq 1 ] ; then
 	fi
 	mkdir -p "build-${TARGET}-gcc"
 	cd "build-${TARGET}-gcc"
-	../gnu/gcc/configure --target="$TARGET" \
+	echo ../gnu/gcc/configure --target="$TARGET" \
 		--prefix="$TOOLCHAIN_PREFIX" \
 		--with-sysroot="$SYSROOT" \
 		--enable-languages=c,c++
