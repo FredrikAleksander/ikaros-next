@@ -36,7 +36,20 @@ SECTIONS
         bss = .;
         *(.bss)
     }
-    . = ALIGN(4096); /* align to page size */
     __bss_end = .;
+	.init_array :
+	{
+		crti.o(.init_array)
+		KEEP (*(SORT(EXCLUDE_FILE(crti.o crtn.o) .init_array.*)))
+		KEEP (*(EXCLUDE_FILE(crti.o crtn.o) .init_array))
+		crtn.o(.init_array)
+	}
+	.fini_array :
+	{
+		crti.o(.fini_array)
+		KEEP (*(SORT(EXCLUDE_FILE(crti.o crtn.o) .fini_array.*)))
+		KEEP (*(EXCLUDE_FILE(crti.o crtn.o) .fini_array))
+		crtn.o(.fini_array)
+	}
     __end = .;
 }

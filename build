@@ -33,7 +33,7 @@ for arg in "$@" ; do
 		DEBUGSYMS=false
 		;;
 	--num-threads=*)
-		NUMTHREADS=`echo $arg | sed -E 's/--num-threads=(\d+)/\1/'`
+		NUMTHREADS=`echo $arg | sed -E 's/--num-threads=(\d*)/\1/'`
 		;;
 	--help)
 		echo 'Usage: ./build [options]'
@@ -110,14 +110,6 @@ esac
 if $DEBUGSYMS ; then
 	CFLAGS="$CFLAGS -g"
 fi
-
-export BSP
-export TARGET
-export TARGETARCH
-export SYSROOT
-export DEBUGSYMS
-export DESTDIR
-export CFLAGS
 
 MAKE=make
 which $MAKE > /dev/null
@@ -209,6 +201,14 @@ if [ $RESULT -eq 1 ] ; then
 
 	cd $CURTMPDIR
 fi
+
+export BSP
+export TARGET
+export TARGETARCH
+export SYSROOT
+export DEBUGSYMS
+export DESTDIR
+export CFLAGS
 
 for PROJECT in $PROJECTS ; do
 	cd $CURTMPDIR/$PROJECT
