@@ -143,12 +143,7 @@ fi
 
 CURTMPDIR=`pwd`
 if [ $RESULT -eq 1 ] ; then
-	mkdir -p $TOOLCHAIN_PREFIX 
-
-
-	echo $SYSROOT
-	echo $TARGET
-	echo $DESTDIR
+	mkdir -p $TOOLCHAIN_PREFIX
 
 	echo "Building toolchain..."
 	echo "Installing system root headers..."
@@ -163,23 +158,21 @@ if [ $RESULT -eq 1 ] ; then
 	fi
 	mkdir -p "build-${TARGET}-binutils"
 	cd "build-${TARGET}-binutils"
-	echo ../gnu/binutils/configure --target="$TARGET" \
+	../gnu/binutils/configure --target="$TARGET" \
 		--prefix="$TOOLCHAIN_PREFIX" \
 		--with-sysroot="$SYSROOT" \
 		--disable-werror
 	if [ $? -ne 0 ] ; then 
 		exit 1
 	fi
-	#$MAKE -j$NUMTHREADS
+	$MAKE -j$NUMTHREADS
 	if [ $? -ne 0 ] ; then
 		exit 1
 	fi
-	#$MAKE -j$NUMTHREADS install
+	$MAKE -j$NUMTHREADS install
 	if [ $? -ne 0 ] ; then
 		exit 1
 	fi
-
-	export
 
 	cd $CURTMPDIR
 	echo "Building ${TARGET}-ikaros GCC..."
@@ -188,7 +181,7 @@ if [ $RESULT -eq 1 ] ; then
 	fi
 	mkdir -p "build-${TARGET}-gcc"
 	cd "build-${TARGET}-gcc"
-	echo ../gnu/gcc/configure --target="$TARGET" \
+	../gnu/gcc/configure --target="$TARGET" \
 		--prefix="$TOOLCHAIN_PREFIX" \
 		--with-sysroot="$SYSROOT" \
 		--enable-languages=c,c++
