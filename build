@@ -141,6 +141,14 @@ if $TOOLCHAIN_BUILD ; then
 	RESULT=1
 fi
 
+export BSP
+export TARGET
+export TARGETARCH
+export SYSROOT
+export DEBUGSYMS
+export DESTDIR
+export CFLAGS
+
 CURTMPDIR=`pwd`
 if [ $RESULT -eq 1 ] ; then
 	mkdir -p $TOOLCHAIN_PREFIX
@@ -148,7 +156,7 @@ if [ $RESULT -eq 1 ] ; then
 	echo "Installing system root headers..."
 	for PROJECT in "`pwd`/sys" "`pwd`/lib/libc" ; do
 		cd $PROJECT
-		$MAKE -j$NUMTHREADS install-headers
+		DESTDIR="$TOOLCHAIN_PREFIX" BSP="$BSP" TARGET="$TARGET" TARGETARCH="$TARGET" DEBUGSYMS="$DEBUGSYMS" CFLAGS="$CFLAGS"  $MAKE -j$NUMTHREADS install-headers
 	done
 	cd $CURTMPDIR
 	echo "Building Binutils..."
